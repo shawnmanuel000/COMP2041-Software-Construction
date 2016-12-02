@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><title>Assignment 1 - plpy</title>
+<link href="./Assignment 1 - plpy_files/2041.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+<div class="page-header">
+<h1>Assignment 1 - plpy</h1>
+</div>
+
+<p>
+This assignment aims to give you:
+</p><ul>
+<li> practice in Perl programming generally
+</li><li> experience in translating between complex formats with Perl
+</li><li> introduce you to Python semantics &amp; clarify your understanding of Perl semantics
+</li></ul>
+<p>
+<b>Note:</b> the material in the lecture notes will not be sufficient
+by itself to allow you to complete this assignment.
+You may need to search on-line documentation for Perl etc.
+Being able to search documentation efficiently for the information you need is a
+<em>very</em> useful skill for any kind of computing work.
+
+</p><h2>Introduction</h2>
+
+Your task in this assignment to write a Perl compiler.
+Generally compilers take a high level language as input
+and output assembler, which can then can be directly executed.
+Your compiler will take a Perl script as input and output a Python script.
+Such a translation is useful because
+programmers sometimes need to convert Perl scripts to Python.
+<p>
+Possible reasons for this include integration of existing Perl code
+into a Python program and shifting a complete Perl prgram to a new platform which requires Python,
+such as Google's app engine.
+</p><p>
+Your task in this assignment
+is to automate this conversion.  You must write a Perl program which
+takes as input a Perl script and outputs an equivalent Python 3 program.
+</p><p>
+The translation of some Perl code to Python is straightforward.
+The translation of other Perl code is difficult or infeasible.
+So your program will not be able to translate all Perl code to Python.
+But a tool that  performs only a partial translation of Perl to Python
+could still be very useful.
+</p><p>
+You should assume the Python code output by your program will
+be subsequently read and modified by humans.  In other word
+you have to output readable Python code.  For example, you should
+aim to preserve variable names and comments, and to output
+properly indented Python code.
+</p><p>
+You must write your translator in Perl (for assignment 2 there will be no restriction on language).
+</p><p>
+You should call your Perl program <code>plpy.pl</code>.  It should
+operate as Unix filters typically do, read files specified on the command line
+and if none are specified it should read from standard input (Perl's &lt;&gt; operator
+does this for you).  For example:
+
+</p><pre class="command_line"><kbd class="shell">cat iota.pl</kbd>
+#!/usr/bin/perl
+$x = 1;
+while ($x &lt; 5) {
+    print "$x\n";
+    $x = $x + 1;
+}
+<kbd class="shell">perl iota.pl</kbd>
+1
+2
+3
+4
+<kbd class="shell">./plpy.pl iota.pl|python3.5 -u</kbd>
+1
+2
+3
+4
+<kbd class="shell">./plpy.pl iota.pl&gt;iota.py</kbd>
+<kbd class="shell">cat iota.py</kbd>
+#!/usr/local/bin/python3.5 -u
+x = 1
+while x &lt; 5:
+    print(x)
+    x = x + 1
+<kbd class="shell">python3.5 -u iota.py</kbd>
+1
+2
+3
+4
+</pre>
+
+<p>
+In many cases the natural translation of Perl code into Python code will have
+slightly different semantics.  For example, Python's <code>print</code> statement will
+print an initial space if the preceding character printed was not a new line - Perl's <code>print</code>
+does not do  this.
+</p><p>
+This is a general issue with translating between languages.
+It is essential that a compiler such as <code>gcc</code> produce a translation to assembler
+exactly matching the semantics of the program, but our purposes are different.
+</p><p>
+Our goal is to provide automated-assistance in converting a piece of software.
+The software will need to subsequently maintained and modified by humans
+so the simpler natural translation to more human-readable code
+is more desirable even if the semantics do not match exactly.
+Translation of a large piece of software can not be completely automatic
+anyway, and will require subsequent manual modification.
+
+</p><h2>Requirements</h2>
+
+To assist you tackling the assignments requirements have been broken into subsets in
+approximate order of difficulty.  Each subset contains the previous subsets.
+This implementation order is recommended not required.  You will receive marks
+for successfully translating features regardless of which subset they are in,
+even if previous subsets are unimplemented.
+
+<h4>Subset 0: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/0/">examples</a></h4>
+
+<ul>
+<li> simple print statements (with explicit new lines)
+</li><li> strings
+</li></ul>
+
+<h4>Subset 1: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/1/">examples</a></h4>
+
+<ul>
+<li> variables
+</li><li> numeric constants
+</li><li> arithmetic operators: <code>+ - * / % **</code>
+</li></ul>
+
+<h4>Subset 2: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/2/">examples</a></h4>
+
+<ul>
+<li> logical operators: <code>|| &amp;&amp; ! and or not</code>
+</li><li> comparison operators: <code>&lt;, &lt;=, &gt;, &gt;=, &lt;=&gt;, !=, ==</code>
+</li><li> bitwise operators: <code>| ^ &amp; &lt;&lt; &gt;&gt; ~</code>
+</li><li> if/else/elsif, for/foreach, while statements
+</li><li> last, next
+</li></ul>
+
+
+<h4>Subset 3: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/3/">examples</a></h4>
+
+<ul>
+<li> simple use of &lt;STDIN&gt;
+</li><li> more complex print statements (e.g. without new lines)
+</li><li> simple uses of ++ &amp; --
+</li><li> ..
+</li><li> chomp, split, join, ARGV, exit
+</li></ul>
+
+
+<h4>Subset 4: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/4/">examples</a></h4>
+
+<ul>
+<li> &lt;&gt;
+</li><li> <code>.</code> and <code> .=</code>
+</li><li> variable interpolation
+</li><li> simple uses of printf (requiring % in python)
+</li><li> arrays and hashes
+</li><li> push, pop, shift, unshift, reverse
+</li><li> simple use of regexes (// and s///)
+</li></ul>
+
+<h4>Subset 5: <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/5/">examples</a></h4>
+
+<ul>
+<li> anonymous variable ($_)
+</li><li> open
+</li><li> functions
+</li><li> more complex uses of features from subsets 1-4
+</li><li> self-application (translating itself to python)
+</li></ul>
+<p>
+You may suggest in the forum other  features to be added to the list for subset 5.
+Some features in subset 5 present great difficulties to translation.
+Perfect handling of these will not be required for full marks.
+
+</p><h4>Not Included</h4>
+
+The only features you need implement are described in the subsets above.
+If uncertain ask in the class forum.
+
+<h2>Assumptions/Clarifications</h2>
+
+Like all good programmers, you should make as few assumptions about
+your input as possible.
+<p>
+You can assume that the input to your program is a valid Perl program.
+You can assume this  Perl program executes without errors or warnings (with -w specified).
+</p><p>
+It is possible to format Perl
+programs so that they are difficult to translate.
+Most of the  Perl programs your program will be given will be formated
+in a similar way to lecture and lab example Perl programs.  But your should attempt to successfully
+translate at least small variations to that style, and preferably any formatting style
+that a reasonable Perl programmer is likely to use.
+</p><p>
+It is possible to construct obscure and difficult to translate Perl
+programs using the features list in the above subsets.
+Most of the  Perl programs your program will be given as input will use the features
+in an obvious straight-forward  manner.
+</p><p>
+You may use any Perl package which is installed on CSE's system.
+</p><p>
+You may submit multiple  files but the primary file must be named <code>plpy.pl</code>.
+</p><p>
+If there is Perl that you cannot translate the preferred  behaviour is to
+include the untranslated Perl construct as a comment.  Other sensible behaviour is acceptable.
+</p><p>
+The Python you produce should be compatible with Python 3.5 (as installed at CSE).
+Use the #! line shown in examples.
+
+</p><h2>Hints</h2>
+
+You should follow  discussion about the assignment in class forum
+Questions about the assignment should be posted there so all students can see the answer.
+If you need an urgent reply also e-mail Andrew.
+<p>
+Get the easiest transformations working first, make simplifying
+assumptions as needed, and get some simple small Perl scripts
+successfully transformed.   Then look at handling more constructs and
+removing the assumptions.
+</p><p>
+You won't be able to output Python as you generate it e.g. you won't know which import statements are needed to
+be printed first.
+Push the Python code to an array as you generate it.
+</p><p>
+If you want a good mark, you'll need to  be careful in your handling of syntax
+which has no special meaning in Perl but does in Python.
+</p><p>
+The bulk of knowledge about Perl syntax &amp; semantics you need to know
+has been covered in lectures. But if you want to get a very high mark,
+you may need to discover more. Similarly much of the knowledge of
+Python you need can be determined by looking at a few of the provided examples
+but if you want to get a very high mark you will need to discover more.
+This is deliberate as extracting this type of information
+from documentation is something you'll do a lot of when you graduate.
+
+
+</p><h2>Testing</h2>
+
+As usual some autotests will be available:
+
+<pre class="command_line"><kbd class="shell">~cs2041/bin/autotest plpy</kbd>
+</pre>
+
+You will need to do most of the testing yourself.
+
+<h2>Test Perl Scripts</h2>
+
+You should submit five Perl scripts named <code>test00.pl .. test04.pl</code>
+which each test a single aspect of translation.
+They should be short scripts containing Perl code which is likely
+to be mis-translated.
+The <code>test??.pl</code> scripts do not have to be examples that your program translates successfully.
+<p>
+
+You may share your test examples with your friends but
+the ones you submit must be your own creation.
+</p><p>
+The test scripts should show how you've thought about testing carefully.
+They should be as short as possible (even just a single line).
+
+</p><h2>Demo Perl Scripts</h2>
+
+You should submit five Perl scripts named <code>demo00.pl .. demo04.pl</code>
+which your program translates correctly (or at least well).
+These should be realistic Perl scripts containing features whose
+successful translation indicates the performance of your assignment.
+Your demo scripts don't have to be original, e.g. they might be lecture examples.
+If they are not original they should be correctly attributed.
+<p>
+If your have implemented most of the subsets these should be longer Perl scripts (20+ lines).
+They should if possible  test many aspects of Perl to Python translation.
+
+</p><h2>Setting up a Git Repositories</h2>
+
+A repository has been created for your assignment on <code>gitlab.cse.unsw.edu.au</code>.
+<p>
+You need to add your CSE ssh key to your  <code>gitlab.cse.unsw.edu.au</code>.
+</p><p>
+If you have not done so already, follow the instructions for doing this can be found at the start of lab 7
+to add your CSE ssh key to your  <code>gitlab.cse.unsw.edu.au</code>.
+</p><p>
+After you have done that create a git repository for the assignment in your CSE account.
+</p><p>
+These commands will create a copy of the gitlab repository in your CSE account.
+</p><p>
+Make sure you replace <i>5555555</i> below by your student number!
+</p><p>
+</p><pre class="command_line"><kbd class="shell">cd</kbd>
+<kbd class="shell">git clone gitlab@gitlab.cse.unsw.EDU.AU:z5555555/16s2-comp2041-ass1 ass1</kbd>
+Cloning into 'ass1'...
+<kbd class="shell">chmod 700 ass1</kbd>
+<kbd class="shell">cd ass1</kbd>
+<kbd class="shell">ln -sf /home/cs2041/public_html/scripts/autotest-pre-commit-hook .git/hooks/pre-commit</kbd>
+<kbd class="shell">ls</kbd>
+diary.txt examples  plpy.pl
+</pre>
+<p>
+Make sure you do the chmod above, so your work is not accessible to other students.
+</p><p>
+Place all your files for the assignment in this <b>ass1</b> directory.
+
+A file named <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/plpy.pl">plpy.pl</a> should be present in your repository.
+It contains a small amount of Perl to get you started.  There should also be a directory named <a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples">examples</a>.
+</p><p>
+Try out the starting-point code to see if it works.
+</p><p>
+</p><pre class="command_line"><kbd class="shell">chmod 700 plpy.pl</kbd>
+<kbd class="shell">./examples/0/hello_world.pl</kbd>
+hello world
+<kbd class="shell">./plpy.pl examples/0/hello_world.pl &gt;hello_world.py</kbd>
+<kbd class="shell">cat hello_world.py</kbd>
+#!/usr/local/bin/python3.5 -u
+print("hello world")
+<kbd class="shell">./hello_world.py</kbd>
+hello world
+<kbd class="shell">./examples/0/hello_world.pl &gt;pl.output</kbd>
+<kbd class="shell">./hello_world.py &gt;py.output</kbd>
+<kbd class="shell">diff py.output pl.output &amp;&amp; echo success</kbd>
+success
+</pre>
+`
+Note the starting-point code  has successfully translated a small Perl program
+(<a href="http://www.cse.unsw.edu.au/~cs2041/assignments/plpy/examples/0/hello_world.pl">examples/0/hello_world.pl</a>) to Python.
+<p>
+Sadly this is almost the only input it can correctly handle.
+</p><p>
+Your job is to fix that.
+</p><p>
+First make a change to starting point code - e.g. change the initial
+comment to remove Andrew's name (using your editor of choice) and add your name - then push this to gitlab as your first commit, like this:
+
+</p><pre class="command_line"><kbd class="shell">vi plpy.pl</kbd>
+<kbd class="shell">git add plpy.pl</kbd>
+<kbd class="shell">git commit -a -m "Andrew's code"</kbd>
+[master 4cdfa5f] Andrew's code
+ 1 file changed, 17 insertions(+)
+ create mode 100755 plpy.pl
+<kbd class="shell">git push</kbd>
+Counting objects: 3, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 239 bytes, done.
+Total 2 (delta 1), reused 0 (delta 0)
+To gitlab@calliope1.cse.unsw.EDU.AU:16s2COMP2041/z5555555-ass1.git
+   36ccb2b..4cdfa5f  master -&gt; master
+</pre>
+
+If you want to check that your gitlab repository has stored your commit visit
+<code>https://gitlab.cse.unsw.edu.au/z<i>5555555</i>/16s2-comp2041-ass1.git</code> (replacing <i>5555555</i> with your student number)
+<p>
+Here are examples of how you might push work to gitlab after
+completing parts of the assignment.
+
+</p><pre class="command_line"><kbd class="shell">vi plpy.pl</kbd>
+<kbd class="shell">vi diary.txt</kbd>
+<kbd class="shell">git commit -a -m 'added code to handle for loops'</kbd>
+<kbd class="shell">git push</kbd>
+[master 5a11cef] added code to handle for loops
+ 2 files changed, 2 insertions(+)
+ create mode 100644 diary.txt
+<kbd class="shell">vi plpy.pl</kbd>
+<kbd class="shell">vi diary.txt</kbd>
+<kbd class="shell">git commit -a -m 'added code to produce arithmetic'</kbd>
+[master 1e3fe75] added code to produce arithmetic
+ 2 files changed, 2 insertions(+)
+<kbd class="shell">git push</kbd>
+Counting objects: 10, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 617 bytes, done.
+Total 8 (delta 2), reused 0 (delta 0)
+To gitlab@gitlab.cse.unsw.EDU.AU/z5555555/16s2-comp2041-ass1.git
+   63655f5..1e3fe75  master -&gt; master
+<kbd class="shell">vi demo00.pl demo01.pl test00.pl test01.pl test02.pl</kbd>
+<kbd class="shell">git add demo00.pl demo01.pl test00.pl test01.pl test02.pl</kbd>
+<kbd class="shell">git commit -a -m 'created some demo &amp; test examples'</kbd>
+[master 226cddf] created some demo &amp; test examples
+ 0 files changed
+ create mode 100644 demo00.pl
+ create mode 100644 demo01.pl
+ create mode 100644 test00.pl
+ create mode 100644 test01.pl
+ create mode 100644 test02.pl
+<kbd class="shell">git push</kbd>
+Counting objects: 4, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 352 bytes, done.
+Total 3 (delta 0), reused 0 (delta 0)
+To gitlab@gitlab.cse.unsw.EDU.AU/z5555555/16s2-comp2041-ass1.git
+   1e3fe75..226cddf  master -&gt; master
+<kbd class="shell">...</kbd>
+<kbd class="shell">give cs2041 ass1 plpy.pl diary.txt demo??.pl test??.pl</kbd>
+</pre>
+
+I expect most students will just work in their CSE account and push work to gitlab.cse.unsw.edu.au
+from CSE, but you can try setting up a git repository on your home machine
+and pushing work to gitlab.cse.unsw.edu.au from there.
+<p>
+If you do this you'll want to
+use git's pull command to update the repository in your CSE account.
+</p><p>
+</p><pre class="command_line"><kbd class="shell">git pull</kbd>
+Unpacking objects: 100% (3/3), done.
+From gitlab@gitlab.cse.unsw.EDU.AU/z5555555/16s2-comp2041-ass1.git
+   226cddf..e64fee9  master     -&gt; origin/master
+Updating 226cddf..e64fee9
+Fast-forward
+ plpy.pl |    1 +
+ 1 file changed, 1 insertion(+)
+</pre>
+<p>
+If you can't get ssh access to gitlab to work for your home repository, you can also use https to access gitlab
+using a URL equivalent to <code>https://gitlab.cse.unsw.edu.au/z<i>5555555</i>/16s2-comp2041-ass1.git</code> (replace <i>5555555</i> with your student number) and your z-id &amp; zPass.
+</p><p>
+</p><pre class="command_line"><kbd class="shell">git remote set-url origin https://gitlab.cse.unsw.edu.au/<i>z5555555</i>/16s2-comp2041-ass1.git</kbd>
+<kbd class="shell">git push</kbd>
+Username for 'https://gitlab.cse.unsw.EDU.AU': <kbd>z5555555</kbd>
+Password for 'https://z5555555@gitlab.cse.unsw.EDU.AU': <kbd><i>zPass</i></kbd>
+</pre>
+<p>
+If the supplied files for the assignment are updated you can merge the changes into your git repository like this:
+
+</p><pre class="command_line"><kbd class="shell">git remote add example_code gitlab@gitlab.cse.unsw.EDU.AU:16s2COMP2041/16s2-comp2041-ass1-supplied-files.git</kbd>
+<kbd class="shell">git pull</kbd>
+</pre>
+
+Git will be covered later in lectures but the above commands
+should be enough to get by.  Help will be available in the forums, and from your tutor if anything goes wrong.
+
+<h2>Diary</h2>
+
+You must keep notes of each piece of you make work on this assignment.
+The notes should include date, starting &amp; finishing time, and a brief description of
+the work carried out.
+For example:
+<p>
+</p><table class="table table-bordered">
+<tbody><tr><th>Date</th><th>Start</th><th>Stop</th><th>Activity</th><th>Comments
+</th></tr><tr><td>29/09/16</td><td>16:00</td><td>17:30</td><td>coding</td><td>implemented assignment statements
+</td></tr><tr><td>30/09/16</td><td>20:00</td><td>10:30</td><td>debugging</td><td>found bug in while loops
+</td></tr></tbody></table>
+<p>
+Include these notes in the files you submit as an ASCII file named diary.txt.
+</p><p>
+Some students choose to store this information in git commit messages
+and use a script to generate  <code>diary.txt</code> from <code>git log</code> before they submit.
+You are welcome to do this.
+
+</p><h4>Assessment</h4>
+<p>
+Assignment 1 will contribute 15 marks to your final COMP[29]041 mark
+</p><p>
+15% of the marks for assignment 1 will come from hand marking.  These marks will be awarded on the basis of clarity,
+commenting, elegance and style.  In other words, you will be assessed on how
+easy it is for a human to read and understand your program.
+The hand marking will also check that the Python you generate maintains the readability of
+the input Perl program, you have submitted an appropriate diary and have
+pushed your work to <code>gitlab.cse.unsw.edu.au</code>.
+</p><p>
+5% of the marks for stage 1 will be based on the test suite you submit.
+</p><p>
+80% of the marks for assignment 1 will come from your translators
+performance on a  set of input Perl programs.
+</p><p>
+ 50+ input Perl programs will be used to calculate your performance mark.
+Your translator will be run on each.
+The Python it produces will be run on sample input.
+Your will receive marks if your Python produces the correct output.
+</p><p>
+</p><table class="table table-bordered table-striped">
+<tbody><tr><td align="right">100%</td><td>Subsets 0-4 handled perfectly, subset 5 largely working, plpy.pl is beautiful
+</td></tr><tr><td align="right">90%</td><td>Subsets 0-4 handled, plpy.pl is very clear &amp; very readable
+</td></tr><tr><td align="right">75%</td><td>Subsets 0-3 handled, plpy.pl is good clear code
+</td></tr><tr><td align="right">65</td><td>Subsets 0-2 handled, plpy.pl is reasonably readable
+</td></tr><tr><td align="right">55%</td><td>Subset 0-1 translated more-or-less
+</td></tr><tr><td align="right">0%</td><td>Knowingly providing your work to anyone and it is subsequently submitted (by anyone).
+</td></tr><tr><td align="right">0 FL for COMP[29]041</td><td>Submitting any other person's work.  This includes joint work.
+</td></tr><tr><td>academic<br>misconduct</td><td>Submitting another person's work without their consent.  Paying another person to do work for you.
+</td></tr></tbody></table>
+<p>
+The lecturer may vary the assessment scheme after inspecting
+the assignment submissions but its likely to be broadly similar to the above.
+
+</p><h2>Originality of Work</h2>
+
+The work you submit must be your own work.  Submission of work partially or completely derived
+from any other person or jointly written with any other person is not permitted.
+The penalties for such an offence may include negative marks,
+automatic failure of the course and possibly suspension from UNSW.
+Assignment submissions will be examined both automatically and manually
+for such submissions.
+<p>
+Relevant scholarship authorities will be informed if students holding scholarships
+are involved in an incident of plagiarism or other misconduct.
+</p><p>
+Plagiarism or other misconduct can also result in loss of student visas.
+</p><p>
+Do not provide or show your assignment work to any other person - apart from the teaching staff
+of COMP2041/9041.
+If you knowingly provide or show your assignment work to another person for any
+reason, and work derived from it is submitted you may be penalized, even
+if the work was submitted without your knowledge or consent.  This may
+apply even if your work is submitted by a third party unknown to you.
+</p><p>
+Note, you will not be penalized if your work is
+taken without your consent or knowledge.
+
+</p><h2>Submission</h2>
+
+This assignment is  due at 23:59pm Monday October 3
+Submit the assignment using this <i>give</i> command:
+
+<pre class="command_line"><kbd class="shell">give cs2041 ass1 plpy.pl diary.txt demo??.pl test??.pl [any-extra-files]</kbd>
+</pre>
+
+If your assignment is submitted after this date, each hour it is late reduces
+the maximum mark it can achieve by 1%.
+For example if an assignment worth 76% was submitted
+5 hours late, the late submission would have no effect.
+If the same assignment was submitted 30 hours late it would be awarded
+70%, the maximum mark it can achieve at that time.
+</div>
+
+
+</body></html>
