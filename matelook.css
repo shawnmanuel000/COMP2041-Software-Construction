@@ -1,0 +1,173 @@
+/*
+ * written by andrewt@cse.unsw.edu.au September 2016
+ * as a starting point for COMP2041/9041 assignment 2
+ * http://cgi.cse.unsw.edu.au/~cs2041/assignments/matelook/
+ *
+ * Change (or replace) the CSS below to create you own look-and-feel
+ *
+ *
+ * CSS style adapted from: https://www.youtube.com/watch?v=CPcS4HtrUEU
+ */
+
+article, aside, header, main, section, thumbnail, comment, post, nav{
+   display: block;
+}
+
+.banner {
+   background-color: #11233b;
+   color: white;
+   padding: 10px 20px;
+   text-align: center;
+   font-size: x-large;
+   font-weight: bold;
+}
+
+main {
+   width: 640px;
+   float: right;
+}
+
+nav {
+   background-color: #20416c;
+   color: white;
+   padding: 5px;
+   margin-top: 1px;
+}
+
+aside {
+   background-color: #bbbbbb;
+   width: 270px;
+   float: left;
+   padding: 20px;
+   margin 5px;
+}
+
+body {
+   width: 960px;
+   margin-left: auto;
+   margin-right: auto;
+   background-color: #f0f0f0;
+}
+
+section {
+   background-color: #bbbbbb;
+   margin-top: 10px;
+   padding: 5px;
+}
+
+article {
+   background-color: white;
+   margin-top: 5px;
+   padding: 5px 10px;
+}
+
+thumbnail {
+   float: left;
+}
+
+comment {
+   width: 450px;
+   float: right;
+}
+
+post {
+   padding: 10px;
+   background-color: #cccccc;
+}
+
+.matelook_user_details {
+   background-color: #eeeeee;
+   color: #204142;
+   border:thin solid #204182;
+   border-radius: 0.42em;
+   padding: 20px;
+   margin 5px;
+}
+
+.matelook_mates {
+   background-color: grey;
+   padding: 10px;
+   border:thin solid #204182;
+   border-radius: 0.42em;
+}
+
+.tst1 {
+   float: left;
+   padding-left: 10px;
+   padding-right: 10px;
+}
+
+.tst2 {
+   float: right;
+   padding-left: 10px;
+}
+
+.tst3 {
+   float: center;
+}
+
+.light_text {
+   color: white;
+   display: inline;
+}
+
+.dark_text {
+   color: black;
+   display: inline;
+}
+
+.nav_align{
+  display: inline;
+}
+
+.center {
+   text-align: center;
+}
+
+/* http://stackoverflow.com/questions/22672368/how-to-make-a-transparent-html-button
+*/
+.button {
+   background-color: Transparent;
+   background-repeat:no-repeat;
+   border: none;
+   cursor:pointer;
+   overflow: hidden;
+   outline:none;
+   font-size: medium;
+   text-decoration: underline;
+   color: blue;
+}
+
+.button2 {
+   background-color: Transparent;
+   background-repeat:no-repeat;
+   border: none;
+   cursor:pointer;
+   overflow: hidden;
+   outline:none;
+   font-size: medium;
+   text-decoration: underline;
+}
+
+.details {
+   width: 300px;
+}
+
+.matelook_button {
+   background-color: #ABCDEF;
+   border:thin solid #414290;
+   color: black;
+}
+
+.button_small {
+   background-color: Transparent;
+   background-repeat:no-repeat;
+   border: none;
+   cursor:pointer;
+   overflow: hidden;
+   outline:none;
+   font-size: small;
+   text-decoration: underline;
+   color: blue;
+   padding: 2px;
+}
